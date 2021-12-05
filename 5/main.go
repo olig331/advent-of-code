@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -27,11 +26,11 @@ func main(){
 	input := startData.input_data
 	board2, _ := constructData()
 
-	fmt.Println(calcLines(board, input, size, false)) // Part 1
-	fmt.Println(calcLines(board2.board, input, size, true)) // Part 2
+	fmt.Println(plotNumbers(board, input, size, false)) // Part 1
+	fmt.Println(plotNumbers(board2.board, input, size, true)) // Part 2
 }
 
-func calcLines(board [][]int, input [][]int, size int, allowDiagonals bool)int{
+func plotNumbers(board [][]int, input [][]int, size int, allowDiagonals bool)int{
 	for i := 0; i < len(input); i++ {
 		row := input[i]
 		firstCoords := Coords{x: row[0], y: row[1]}
@@ -49,18 +48,18 @@ func calcLines(board [][]int, input [][]int, size int, allowDiagonals bool)int{
 			board = calcDiag(firstCoords, secondCoords, board)
 		}
 	}
-	return count(board)
+	return count(board, size)
 }
 
 func calcLaterals(firstCoords int, secondCoords int, fixedPos int, board [][]int, axis string)[][]int {
 	copy := firstCoords	
 	for {
 		if(copy == secondCoords){
-			if(axis == "y"){
-				board[copy][fixedPos] += 1
-			} else {
-				board[fixedPos][copy] += 1
-			}	
+			if(axis == "y"){ 
+				board[copy][fixedPos] += 1; 
+				break
+			}
+			board[fixedPos][copy] += 1
 			break
 		}
 		if(axis == "y"){
@@ -68,53 +67,38 @@ func calcLaterals(firstCoords int, secondCoords int, fixedPos int, board [][]int
 		} else {
 			board[fixedPos][copy] += 1
 		}
-		if(copy < secondCoords){
-			copy++
-		} else {
-			copy--
-		}
+
+		if(copy < secondCoords){ copy++ } 
+		if( copy > secondCoords){ copy-- }		
 	}		
 	return board
 }
 
 func calcDiag(firstCoords Coords, secondCoords Coords, board[][]int)[][]int {
 	if(firstCoords.y != secondCoords.y && firstCoords.x != secondCoords.x) { // Diagonals
-			x := firstCoords.x
-			y := firstCoords.y
-			for {
-				if(y == secondCoords.y || x == secondCoords.x){
-					board[y][x] += 1
-					break
-				}
+		x := firstCoords.x
+		y := firstCoords.y
+		for {
+			if(y == secondCoords.y || x == secondCoords.x){
 				board[y][x] += 1
-				if(firstCoords.x < secondCoords.x && firstCoords.y > secondCoords.y){
-					x++
-					y--
-				}
-				if(firstCoords.x > secondCoords.x && firstCoords.y > secondCoords.y){ 
-					x--
-					y--
-				}
-				if(firstCoords.x > secondCoords.x && firstCoords.y < secondCoords.y){
-					x--
-					y++
-				}
-				if(firstCoords.x < secondCoords.x && firstCoords.y < secondCoords.y){
-					x++
-					y++
-				}
-			}		
+				break
+			}
+			board[y][x] += 1
+			if(firstCoords.x < secondCoords.x && firstCoords.y > secondCoords.y){ x++; y-- }
+			if(firstCoords.x > secondCoords.x && firstCoords.y > secondCoords.y){ x--; y-- }
+			if(firstCoords.x > secondCoords.x && firstCoords.y < secondCoords.y){ x--; y++ }
+			if(firstCoords.x < secondCoords.x && firstCoords.y < secondCoords.y){ x++; y++ }
+		}		
 	}
 	return board
 }
 
-func count(board [][]int)int {
+func count(board [][]int, size int)int {
 	count := 0
-	for  i := 0; i < len(board); i++{
-    for j  := 0; j < len(board[i]); j++ {
+	for  i := 0; i < size; i++{
+    for j  := 0; j < size; j++ {
       if(board[i][j] > 1){
-				
-        count ++
+				count ++
       }
     }
   }
@@ -122,17 +106,13 @@ func count(board [][]int)int {
 }
 
 func constructData()(Data, error){
-	file, err := os.Open("data.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
+	file, _ := os.Open("data.txt")
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 	size := 0
 	var input_data [][]int
 	for scanner.Scan() {
-		line := scanner.Text()
-		arr := strings.Split(line, ",")
+		arr := strings.Split(scanner.Text(), ",")
 		var row []int
 		for _, val := range arr {
 			conv, _ := strconv.Atoi(val)
