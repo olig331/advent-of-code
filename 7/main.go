@@ -34,13 +34,12 @@ func calcLowestFuelCost(data []int, scalingCost bool)int {
 		for _, item := range data {
 			fuelCost := position - item
 			abs := int(math.Abs(float64(fuelCost)))		
-			pushVal := abs
+			count += abs
 			if scalingCost {
 				for j := 1; j < abs; j ++ {
-					pushVal += j
+					count += j
 				}
 			}
-			count += pushVal
 		}
 		if(i == 0){
 			result = count
