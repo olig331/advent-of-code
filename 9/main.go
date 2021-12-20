@@ -9,6 +9,22 @@ import (
 	"strings"
 )
 
+type Coords struct {
+	x int
+	y int
+}
+
+var directions = []Coords{
+	{x: -1, y: 1},
+	{x: -1, y: -1},
+	{x: 1, y: 1},
+	{x: 1, y: -1},
+	{x: 0, y: 1},
+	{x: 0, y: -1},
+	{x: -1, y: 0},
+	{x: 1, y: 0},
+}
+
 func main(){
 	data := constructData()
 
@@ -37,7 +53,52 @@ func main(){
 		}
 	}
 	fmt.Println(count(lowest))
+
+	for y := 0; y < len(data); y++{
+		for x := 0; x < len(data[y]); x++ {
+			if data[y][x] < 9 {
+				data[y][x] = 0
+			}
+		}
+	}
+	var results []int
+	out:
+	for y := 0; y < len(data); y++{
+		for x := 0; x < len(data[y]); x++ {
+			count := 0
+			if(data[y][x] == 0) {
+				count++
+				res := checkNeighbours(data, y, x, count)
+				data = res.data
+				results = append(results, res.count)
+				break out
+			} 
+		}
+	}
+	fmt.Printf("%+v", results)
 }
+
+type ReturnType struct {
+	data [][]int
+	count int
+}
+
+func checkNeighbours(data [][]int, y, x int, count int)ReturnType{
+	copy := count
+	for i := 0; i < len(directions); i++ {
+		newX := x + directions[i].x
+		newY := y + directions[i].y
+		if newY >= 0 && newY < len(data) && newX >=0 && newX < len(data[newY]){
+			if  data[y][x] == 0 {
+				copy += 1
+				data[y][x] = -1
+				checkNeighbours(data, newY, newX, copy)
+			}
+		}
+ 	}
+	return ReturnType{data:data, count:copy}
+}
+
 
 func count(arr []int)int {
 	count := 0
