@@ -8,6 +8,7 @@ const main = () => {
   let lenY = 895, lenX = 1311
   const input = []
   let data = fs.readFileSync(path.join(__dirname, "data.txt"), "utf8").split("\n").filter(Boolean);
+  let reformedArr = []
   
   for(let i = 0; i < data.length; i++) {
     const arr = data[i].split(",")
@@ -39,14 +40,15 @@ const main = () => {
   folds.forEach((fold, index) => {
     foldIndex = fold.replace(/foldalong(x|y)\=/g, "")
     let foldDir = fold.match(/[x|y]/g)[0]
-    console.log(foldDir, foldIndex)
+
     if(foldDir === "y"){
-      grid = foldY(foldIndex, grid, xL, yL)
+      foldY(foldIndex, grid, xL, yL)
       yL = foldIndex
     } else if(foldDir === "x") {
-      grid = foldX(foldIndex, grid, yL, xL)
+      foldX(foldIndex, grid, yL, xL)
       xL = foldIndex
     }
+
     if(index == 0){
       console.log(count(grid, foldIndex, grid.length ))
     }
@@ -61,7 +63,7 @@ const main = () => {
       }else {
         row.push(" ")
       }
-    }
+    }  
     result.push(row)
   }
   result.forEach((row) => console.log(row.join("")))
@@ -87,7 +89,6 @@ const foldX = (foldIndex, grid, yL, xL) => {
       grid[y][x] += grid[y][xL - x - 2]
     }
   }
-  return grid
 }
 
 const foldY = (foldIndex, grid, xL, yL) => {
@@ -96,7 +97,6 @@ const foldY = (foldIndex, grid, xL, yL) => {
       grid[y][x] += grid[yL - y - 2][x]
     }
   }
-  return grid
 }
 
 main()
