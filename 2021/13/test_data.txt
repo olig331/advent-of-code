@@ -16,5 +16,5 @@
 2,14
 8,10
 9,0
-foldalongy=7
-foldalongx=5
+fold along y=7
+fold along x=5

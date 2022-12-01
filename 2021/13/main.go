@@ -1,10 +1,9 @@
 package main
 
-/// INCOMPLETE
-
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"regexp"
 	"strconv"
@@ -12,103 +11,155 @@ import (
 )
 
 type Data struct {
-	grid [][]int
-	folds []string
-	length Coords
+	grid  [][]string
+	folds []Fold
+	yLen,
+	xLen int
 }
 
 type Coords struct {
-	x int
+	x,
 	y int
+}
+
+type Fold struct {
+	dir   string
+	index int
+}
+
+type FoldRes struct {
+	newGrid [][]string
+	newLen  int
 }
 
 func main() {
 	data := constructData()
-	grid := data.grid
+	yLen := data.yLen
+	xLen := data.xLen
+	foldedGrid := data.grid
 
-	r, _ := regexp.Compile(`\w\=`)
-	new := r.ReplaceAllString(data.folds[0], "")
-	foldIndex, _ := strconv.Atoi(new)
-	xL := len(grid[0]) - 1 
-
-	// Fold on the x axis on the fold index
-	for y := 0; y < len(grid); y++ {
-		for x := foldIndex; x < len(grid[y]); x++ {
-			grid[y][x] += grid[y][xL - x]
+	for i, fold := range data.folds {
+		if i == 1 {
+			fmt.Println("Part 1: ", countDots(foldedGrid)) // part 1 result
+		}
+		if fold.dir == "y" {
+			res := foldY(foldedGrid, fold.index, yLen, xLen)
+			yLen = res.newLen
+			foldedGrid = res.newGrid
+		} else {
+			res := foldX(foldedGrid, fold.index, xLen, yLen)
+			xLen = res.newLen
+			foldedGrid = res.newGrid
 		}
 	}
 
-	count := 0
-	for y := 0; y < len(grid); y++ {
-		for x := foldIndex; x < len(grid[y]); x++ {
-			if grid[y][x] > 0 {
-				count++
-			}
-		}	
+	for _, row := range foldedGrid {
+		fmt.Println(row) // Part 2 result
 	}
-	// for y := 0; y < len(grid); y++ {
-	// 	for x := foldIndex + 1; x < len(grid[y]); x++ {
-	// 		if grid[y][x] > 0 {
-	// 			count++
-	// 		}
-	// 	}
-	// }	
-	fmt.Println("count %", count)
-	// fmt.Println(foldDir, foldIndex)
-	
 }
 
+func countDots(grid [][]string) int {
+	count := 0
+	for y := 0; y < len(grid); y++ {
+		for x := 0; x < len(grid[y]); x++ {
+			if grid[y][x] == "#" {
+				count++
+			}
+		}
+	}
+	return count
+}
 
+func foldX(grid [][]string, index, xLen, yLen int) FoldRes {
+	var newGrid [][]string
 
-func constructData()Data{
+	for y := 0; y < yLen; y++ {
+		var row []string
+		for i := 0; i < index; i++ {
+			row = append(row, grid[y][i])
+		}
+		newGrid = append(newGrid, row)
+	}
+
+	for y := 0; y < yLen; y++ {
+		for x := index + 1; x < xLen; x++ {
+			if grid[y][x] == "#" {
+				newGrid[y][int(math.Abs(float64(x)-float64(xLen-1)))] = grid[y][x]
+			}
+		}
+	}
+
+	return FoldRes{newGrid: newGrid, newLen: len(newGrid[0])}
+}
+
+func foldY(grid [][]string, index, yLen, xLen int) FoldRes {
+	var newGrid [][]string
+
+	for y := 0; y < index; y++ {
+		var row []string
+		for x := 0; x < xLen; x++ {
+			row = append(row, grid[y][x])
+		}
+		newGrid = append(newGrid, row)
+	}
+
+	for y := index + 1; y < yLen; y++ {
+		for x := 0; x < xLen; x++ {
+			if grid[y][x] == "#" {
+				newGrid[int(math.Abs(float64(y)-float64(yLen-1)))][x] = grid[y][x]
+			}
+		}
+	}
+
+	return FoldRes{newGrid: newGrid, newLen: len(newGrid)}
+}
+
+func constructData() Data {
 	file, _ := os.Open("data.txt")
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
-	length := Coords{x:0, y:0}
-	var folds []string
 	var input_data []Coords
-	for scanner.Scan(){
-		r, _ := regexp.Compile(`^fold\salong\s`)
-		matched := r.MatchString(scanner.Text())
-		if matched {
-			new := r.ReplaceAllString(scanner.Text(), "")
-			folds = append(folds, new)
-		} else {
-			line := strings.Split(scanner.Text(), ",")
-			xCoord, _ := strconv.Atoi(line[0])
-			if xCoord > length.x {
-				length.x = xCoord
-			}
-			yCoord, _ := strconv.Atoi(line[1])
-			if yCoord > length.y {
-				length.y = yCoord
-			}
-			coords := Coords{x:xCoord, y:yCoord} 
+	var folds []Fold
+
+	for scanner.Scan() {
+		line := strings.Split(scanner.Text(), ",")
+		if len(line) > 1 {
+			coords := Coords{x: parseInt(line[0]), y: parseInt(line[1])}
 			input_data = append(input_data, coords)
+		} else {
+			r, _ := regexp.Compile(`[^y|x|0-9]`)
+			s := r.ReplaceAllString(scanner.Text(), "")
+			fold := Fold{dir: string(s[0]), index: parseInt(string(s[1:]))}
+			folds = append(folds, fold)
 		}
 	}
-	var grid [][]int
-	for y := 0; y <= length.y; y++ {
-		var row []int
-		for x:= 0; x <= length.x; x++ {
-			row = append(row, 0)			
+
+	yLen := 0
+	xLen := 0
+	for i := len(folds) - 1; i >= 0; i-- {
+		if folds[i].dir == "y" {
+			yLen = folds[i].index*2 + 1
+		} else {
+			xLen = folds[i].index*2 + 1
+		}
+	}
+	var grid [][]string
+	for y := 0; y < yLen; y++ {
+		var row []string
+		for x := 0; x < xLen; x++ {
+			row = append(row, " ")
 		}
 		grid = append(grid, row)
 	}
-	for _, item := range input_data {
-		grid[item.y][item.x] = 1
+
+	for _, spot := range input_data {
+		grid[spot.y][spot.x] = "#"
 	}
 
-	return Data{ grid:grid, folds: folds, length: length }
+	return Data{grid: grid, folds: folds, yLen: yLen, xLen: xLen}
 }
 
-
-// grid := [][]int{
-// 	{1,0,1,1,0,0,1,0,0,1,0},
-// 	{1,0,0,0,1,0,0,0,0,0,0},
-// 	{0,0,0,0,0,0,1,0,0,0,1},
-// 	{1,0,0,0,1,0,0,0,0,0,0},
-// 	{0,1,0,1,0,0,1,0,1,1,1},
-// 	{0,0,0,0,0,0,0,0,0,0,0},
-// 	{0,0,0,0,0,0,0,0,0,0,0},
-// }
+func parseInt(val string) int {
+	num, _ := strconv.Atoi(val)
+	return num
+}

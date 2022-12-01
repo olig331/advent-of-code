@@ -789,15 +789,15 @@
 610,756
 1059,26
 774,285
-foldalongx=655
-foldalongy=447
-foldalongx=327
-foldalongy=223
-foldalongx=163
-foldalongy=111
-foldalongx=81
-foldalongy=55
-foldalongx=40
-foldalongy=27
-foldalongy=13
-foldalongy=6
+fold along x=655
+fold along y=447
+fold along x=327
+fold along y=223
+fold along x=163
+fold along y=111
+fold along x=81
+fold along y=55
+fold along x=40
+fold along y=27
+fold along y=13
+fold along y=6
