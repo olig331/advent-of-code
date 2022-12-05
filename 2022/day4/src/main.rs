@@ -5,8 +5,7 @@ fn main() {
     let mut part_2_count = 0;
     let file = fs::read_to_string("input.txt").expect("ok");
     file.split("\n").for_each(|line|{
-      let strings:Vec<&str> = line.split(|c:char| c.to_string() == "," || c.to_string() == "-").collect();
-      let ints:Vec<i32> = strings.iter().map(|s| s.parse::<i32>().unwrap()).collect();
+      let ints:Vec<i32> = line.split(|c:char| c.to_string() == "," || c.to_string() == "-").collect::<Vec<&str>>().iter().map(|s| s.parse::<i32>().unwrap()).collect();    
 
       part_1_count += fully_overlaps(&ints);
       part_2_count += partial_overlap(&ints);
