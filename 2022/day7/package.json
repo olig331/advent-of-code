@@ -1,0 +1,15 @@
+{
+  "name": "ts",
+  "version": "1.0.0",
+  "main": "main.ts",
+  "license": "MIT",
+  "dependencies": {
+    "ts-node": "^10.9.1"
+  },
+  "scripts": {
+    "aoc": "ts-node ./main.ts"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.3"
+  }
+}
