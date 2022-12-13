@@ -1,0 +1,13 @@
+{
+  "name": "day13",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-node": "^5.1.2",
+    "typescript": "^4.9.4"
+  },
+  "scripts": {
+    "dev":"ts-node ./main.ts"
+  }
+}
